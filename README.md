@@ -6,7 +6,7 @@
 ## 폴더 구조
 
 ```
-글씨결\
+geulssigyeol\                 (앱 이름은 그대로 "글씨결")
 ├─ README.md                  ← 이 문서
 ├─ deploy\                    ← Vercel에 올라가는 폴더. 이 안이 사이트 전부예요
 │  ├─ index.html              ← 앱 (더블클릭하면 PC에서도 바로 실행)
@@ -60,7 +60,7 @@ Vercel은 폴더를 직접 올리는 화면이 없고 GitHub 저장소를 연결
 ### 3-1. GitHub에 올리기 (5분)
 
 1. https://github.com/new 에서 저장소 만들기. 이름 `geulssigyeol`, **Private** 로 두어도 됩니다 (Vercel은 비공개 저장소도 배포해요). README·.gitignore는 추가하지 말고 빈 저장소로.
-2. 글씨결 폴더에서 PowerShell을 열고 아래 두 줄. `아이디` 자리에 GitHub 아이디.
+2. geulssigyeol 폴더에서 PowerShell을 열고 아래 두 줄. `아이디` 자리에 GitHub 아이디.
 
 ```powershell
 git remote add origin https://github.com/아이디/geulssigyeol.git
@@ -121,7 +121,7 @@ Vercel 프로젝트 → **Analytics** 탭 → Enable. 앱에 스크립트가 이
 ## 6. 코드 고치기 (src 사용)
 
 1. `src\` 안의 파일을 고칩니다. `src\index.html` 을 더블클릭해도 실행되므로 그대로 테스트하면 됩니다.
-2. 글씨결 폴더에서 PowerShell을 열고 실행합니다.
+2. geulssigyeol 폴더에서 PowerShell을 열고 실행합니다.
 
 ```powershell
 .\src\build.ps1

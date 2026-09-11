@@ -1,5 +1,5 @@
 # src\build.ps1  —  src 안의 파일 4개를 합쳐서 deploy\index.html 한 파일로 만듭니다.
-# 사용법: PowerShell에서   .\src\build.ps1   (글씨결 폴더에서 실행)
+# 사용법: PowerShell에서   .\src\build.ps1   (geulssigyeol 폴더에서 실행)
 $ErrorActionPreference = 'Stop'
 $src = $PSScriptRoot
 $out = Join-Path (Split-Path $src -Parent) 'deploy\index.html'
