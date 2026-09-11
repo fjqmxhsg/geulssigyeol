@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>글씨결 플레이북</title>
+<style>
+  :root {
+    --paper: #F5F6F8; --paper-2: #FFFFFF; --line: #D9DEE8; --grid-2: #F0F2F7;
+    --ink: #191B22; --ink-2: #5B6170; --ink-3: #8B92A3;
+    --pen: #2044C8; --pen-soft: #E4E9FF; --pen-line: #B8C4F5;
+    --hl: #FFE95C; --hl-ink: #3B3200;
+    --ok: #1B9556; --danger: #D64545;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --paper: #14161C; --paper-2: #1C1F27; --line: #2C3140; --grid-2: #1F222C; --ink: #ECEEF3; --ink-2: #A9B0C2; --ink-3: #757C8E; --pen: #7E9AFF; --pen-soft: #242C4C; --pen-line: #3B4A85; --hl: #E3CB3E; --hl-ink: #1A1600; --ok: #3CC47C; --danger: #F06A6A; }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 0 20px 80px; background: var(--paper); color: var(--ink);
+    background-image: linear-gradient(var(--grid-2) 1px, transparent 1px), linear-gradient(90deg, var(--grid-2) 1px, transparent 1px);
+    background-size: 28px 28px;
+    font-family: "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", system-ui, sans-serif;
+    font-size: 16px; line-height: 1.65; word-break: keep-all;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; }
+  header { padding: 48px 0 20px; }
+  .eyebrow { font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); }
+  h1 { font-size: 40px; line-height: 1.15; margin: 8px 0 12px; letter-spacing: -.01em; }
+  h1 small { display: block; font-size: 16px; font-weight: 500; color: var(--ink-2); margin-top: 8px; }
+  h2 { font-size: 24px; margin: 52px 0 12px; padding-top: 20px; border-top: 1px solid var(--line); }
+  h3 { font-size: 17px; margin: 24px 0 8px; }
+  p { margin: 10px 0; }
+  .lead { font-size: 18px; color: var(--ink-2); max-width: 40ch; }
+  .card { background: var(--paper-2); border: 1px solid var(--line); border-radius: 14px; padding: 18px 20px; margin: 14px 0; box-shadow: 0 1px 2px rgba(20,24,40,.06), 0 10px 28px -14px rgba(20,24,40,.22); }
+  .card.hl { background: var(--hl); color: var(--hl-ink); border-color: transparent; }
+  .card.pen { background: var(--pen-soft); border-color: var(--pen-line); }
+  .loop { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 16px 0; }
+  .loop div { background: var(--paper-2); border: 1px solid var(--line); border-radius: 12px; padding: 14px 12px; text-align: center; }
+  .loop b { display: block; font-size: 22px; margin-bottom: 4px; }
+  .loop span { font-size: 13px; color: var(--ink-2); }
+  @media (max-width: 560px) { .loop { grid-template-columns: repeat(2, 1fr); } h1 { font-size: 32px; } }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 15px; background: var(--paper-2); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-size: 12.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3); background: var(--grid-2); }
+  tr:last-child td { border-bottom: 0; }
+  .tbl { overflow-x: auto; }
+  ul, ol { padding-left: 22px; margin: 8px 0; }
+  li { margin: 4px 0; }
+  li b { color: var(--ink); }
+  code { font-family: Consolas, "SF Mono", monospace; font-size: 14px; background: var(--grid-2); padding: 1px 6px; border-radius: 5px; }
+  .kpi { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 14px 0; }
+  .kpi div { background: var(--paper-2); border: 1px solid var(--line); border-radius: 12px; padding: 12px; }
+  .kpi b { display: block; font-size: 13px; color: var(--ink-3); font-weight: 600; }
+  .kpi span { font-size: 15px; }
+  @media (max-width: 560px) { .kpi { grid-template-columns: 1fr; } }
+  .tag { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 6px; background: var(--hl); color: var(--hl-ink); margin-right: 6px; vertical-align: middle; }
+  .check li { list-style: none; position: relative; padding-left: 26px; }
+  .check li::before { content: "☐"; position: absolute; left: 0; color: var(--ink-3); }
+  .foot { margin-top: 60px; font-size: 13px; color: var(--ink-3); border-top: 1px solid var(--line); padding-top: 14px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">글씨결 · 운영 플레이북</div>
+  <h1>24글자로 폰트를 주고,<br>공유 카드로 팔로워를 받는다
+    <small>인스타 계정 성장 도구로 글씨결을 굴리는 방법. 처음 4주 계획과 판단 기준.</small>
+  </h1>
+  <p class="lead">글씨결은 앱이 아니라 미끼입니다. 사람들은 "내 글씨가 폰트가 된다"에 반응하고, 결과물(공유 카드)을 올리면서 계정을 태그합니다. 그 태그가 팔로워가 됩니다.</p>
+</header>
+
+<h2>1. 한 문장 전략</h2>
+<div class="card hl">
+  <b>무료로 폰트를 만들어 준다 → 자랑하고 싶은 카드를 준다 → 카드에 우리 계정이 찍혀 있다 → 태그하면 리포스트해 준다 → 다음 글자 이벤트는 팔로워만 먼저 받는다.</b>
+</div>
+<p>돈 드는 것이 없습니다. 서버도 없고, 광고도 없습니다. 비용은 딱 하나, <b>매일 리포스트하고 댓글 다는 시간</b>입니다.</p>
+
+<h2>2. 성장 루프</h2>
+<div class="loop">
+  <div><b>1</b><span>프로필 링크로 앱 열기<br>(3분 안에 폰트 완성)</span></div>
+  <div><b>2</b><span>공유 카드 저장<br>(4:5, 계정·해시태그 자동 삽입)</span></div>
+  <div><b>3</b><span>스토리·피드에 올리고<br>계정 태그</span></div>
+  <div><b>4</b><span>리포스트 + 댓글<br>→ 친구들이 링크 타고 1번으로</span></div>
+</div>
+<p>이 루프에서 앱이 자동으로 해주는 것은 2번뿐입니다. 3번은 사용자가, 4번은 운영자가 합니다. <b>4번을 빠뜨리면 루프가 끊깁니다.</b> 태그된 카드는 24시간 안에 반드시 리포스트하세요.</p>
+
+<h2>3. 왜 먹히나</h2>
+<ul>
+  <li><b>결과물이 "내 것"이라서.</b> 남의 콘텐츠를 공유하는 게 아니라 내 글씨를 자랑하는 겁니다. 공유 저항이 거의 없습니다.</li>
+  <li><b>진입이 낮아서.</b> 앱 설치 없음, 회원가입 없음, 24글자 3분. 프로필 링크 한 번이면 끝.</li>
+  <li><b>비교하고 싶어져서.</b> "내 글씨 vs 네 글씨" 구도가 자연스럽게 생깁니다. 친구 태그를 부릅니다.</li>
+  <li><b>다음이 있어서.</b> 기본 24자 → 영문·숫자 → 쌍자음 → (앞으로) 이모지·특수문자. 팔로우할 이유가 계속 생깁니다.</li>
+</ul>
+
+<h2>4. 배포 전 체크리스트</h2>
+<div class="card">
+<ul class="check">
+  <li><code>CONFIG</code>에 내 인스타 아이디·프로필 주소·해시태그 넣기 (README 2번)</li>
+  <li>https 주소로 배포하고 폰에서 직접 24자 써서 <code>.ttf</code> 받아보기</li>
+  <li>공유 카드 만들어서 내 계정이 제대로 찍히는지 확인</li>
+  <li>인스타 프로필 링크에 배포 주소 넣기</li>
+  <li>프로필 소개에 "내 글씨 폰트 무료 → 링크" 한 줄 넣기</li>
+  <li>해시태그 검색해서 아무도 안 쓰는 태그인지 확인 (겹치면 바꾸기)</li>
+  <li>고정 게시물 1개: 앱 사용법 릴스 또는 캐러셀</li>
+</ul>
+</div>
+
+<h2>5. 첫 4주 계획</h2>
+<div class="tbl"><table>
+  <tr><th>주차</th><th>할 일</th><th>목표</th></tr>
+  <tr><td><b>0주</b><br>준비</td><td>배포, 프로필 링크, 고정 게시물. 내 글씨로 카드 5장 만들어 두기.</td><td>링크 타고 폰트 완성까지 폰에서 문제 없이 됨</td></tr>
+  <tr><td><b>1주</b><br>씨앗</td><td>매일 내 카드 1장 + 릴스 1개(24자 쓰는 과정 타임랩스). 친구·지인 10명에게 직접 링크 보내고 카드 올려 달라고 부탁.</td><td>태그된 카드 10장. 첫 리포스트.</td></tr>
+  <tr><td><b>2주</b><br>루프 확인</td><td>태그된 카드 전부 리포스트. 댓글에 "○○님 글씨 ㅋ 진짜 이렇게 쓰세요?" 식으로 대화. 카드 잘 나온 사람 피드에 소개.</td><td>지인 아닌 사람의 태그가 나오기 시작</td></tr>
+  <tr><td><b>3주</b><br>비교 콘텐츠</td><td>"같은 문장, 다른 글씨" 캐러셀(팔로워 카드 모음). "글씨로 성격 보기" 같은 가벼운 밈.</td><td>저장·공유 수가 좋아요 수를 넘는 게시물 1개</td></tr>
+  <tr><td><b>4주</b><br>첫 이벤트</td><td>"쌍자음·ㅐ·ㅔ 7자 추가" 를 팔로워 한정 공지. 참여자 카드 모아 릴스.</td><td>이벤트 게시물 → 팔로우 전환 측정</td></tr>
+</table></div>
+
+<h2>6. 콘텐츠 유형</h2>
+<h3>매일 (택 1)</h3>
+<ul>
+  <li><b>리포스트</b>: 태그된 카드. 그냥 올리지 말고 한 줄 코멘트 붙이기.</li>
+  <li><b>과정 릴스</b>: 24자 쓰는 손 + 완성 문장 타이핑. 15초. "3분이면 됨" 자막.</li>
+</ul>
+<h3>주 1~2회</h3>
+<ul>
+  <li><b>비교 캐러셀</b>: 같은 문장을 팔로워 5명 글씨로. 첫 장은 질문("누구 글씨가 제일 나답나요?").</li>
+  <li><b>활용 예시</b>: 만든 폰트로 굿노트 다이어리, 캡컷 자막, PPT 표지. "폰트 받아서 여기 씁니다" 증거.</li>
+</ul>
+<h3>월 1회</h3>
+<ul>
+  <li><b>글자 이벤트</b>: 새 단계 오픈(영문 → 쌍자음 → 이모지 → 특수문자). 팔로워 먼저 공지.</li>
+  <li><b>베스트 카드</b>: 이달의 카드 9장 모아 그리드 한 장.</li>
+</ul>
+
+<h2>7. 리포스트 규칙</h2>
+<div class="card pen">
+  <ul>
+    <li>태그된 카드는 <b>24시간 안에</b> 스토리 리포스트. 예외 없음.</li>
+    <li>피드에 올릴 때는 <b>본인에게 DM으로 한 번 물어보고</b> 올립니다. 카드에 이름이 찍혀 있기 때문입니다.</li>
+    <li>리포스트할 때 항상 <b>글씨에 대한 구체적인 한 마디</b>를 붙입니다. "ㅇ이 동그랗네요", "받침이 작아서 귀여움". 봇처럼 보이면 끝입니다.</li>
+    <li>카드가 안 예쁘게 나온 사람은 "펜 굵기 '굵게'로 바꿔 보세요" 같은 <b>해결책 댓글</b>. 그 사람이 다시 만들어 올리면 두 번 노출.</li>
+  </ul>
+</div>
+
+<h2>8. 볼 숫자</h2>
+<div class="kpi">
+  <div><b>루프가 도는가</b><span>태그된 카드 수 / 주. 이게 안 늘면 나머지는 의미 없음.</span></div>
+  <div><b>링크가 먹히는가</b><span>프로필 링크 클릭 수 (인스타 인사이트). 클릭 대비 태그 비율.</span></div>
+  <div><b>팔로우로 바뀌는가</b><span>이벤트 게시물 도달 대비 팔로워 증가.</span></div>
+</div>
+<p>좋아요 수는 보지 마세요. <b>저장·공유·태그</b>만 봅니다. 이 셋이 알고리즘이 밀어주는 신호이고, 루프가 도는 증거입니다.</p>
+
+<h2>9. 막히면</h2>
+<div class="tbl"><table>
+  <tr><th>증상</th><th>원인 추정</th><th>조치</th></tr>
+  <tr><td>링크 클릭은 있는데 태그가 없다</td><td>폰트는 만들었지만 카드까지 안 감. 또는 카드가 안 예쁨.</td><td>완성 화면 첫 버튼을 카드로 바꾸는 것 검토. 기본 문장을 더 자랑하고 싶은 문장으로. 펜 굵기 기본값 "굵게" 테스트.</td></tr>
+  <tr><td>태그는 있는데 팔로우가 안 는다</td><td>리포스트만 하고 팔로우할 이유를 안 줌.</td><td>이벤트 주기 당기기. 프로필에 "다음 이벤트: ○월 ○일" 명시.</td></tr>
+  <tr><td>지인 이후로 안 퍼진다</td><td>비교·밈 콘텐츠 부족. 남의 카드를 보고 "나도"가 안 생김.</td><td>3주차 비교 캐러셀 집중. 글씨 유형 밈("ㅇ 큰 사람 특") 시도.</td></tr>
+  <tr><td>폰트가 이상하다는 댓글</td><td>칸 밖으로 작게 썼거나 획을 여러 번 나눠 씀.</td><td>"칸 안에 크게, 한 획으로" 안내 릴스. 잘 쓴 예/못 쓴 예 비교.</td></tr>
+</table></div>
+
+<h2>10. 다음 단계 (팔로워 1천 이후)</h2>
+<ul>
+  <li><b>글자 단계 추가</b>: 이모지·특수문자·한자 일부. <code>src\app.js</code>의 <code>STAGES</code>에 한 줄 추가하면 됩니다.</li>
+  <li><b>커플·친구 폰트</b>: 두 사람 글씨를 번갈아 조합. 태그를 두 배로 부릅니다.</li>
+  <li><b>굿즈</b>: 본인 폰트로 찍는 스티커·엽서. 첫 수익 모델 후보.</li>
+  <li><b>브랜드 협업</b>: 다이어리·문구 브랜드에 "고객 글씨 폰트 이벤트" 제안. 앱은 <code>?brand=&ig=</code> 파라미터로 이미 다른 계정용으로 바뀝니다.</li>
+</ul>
+
+<h2>11. 하지 말 것</h2>
+<ul>
+  <li>사용자 글씨 데이터를 모으려고 서버를 붙이지 않기. "폰에만 저장"이 신뢰의 핵심입니다.</li>
+  <li>앱 안에서 팔로우 강제(팔로우해야 다운로드) 하지 않기. 앱은 무가입·무료여야 합니다. 팔로우 조건은 12번의 댓글 자동 DM 링크에만 붙입니다.</li>
+  <li>리포스트 없이 하루 넘기지 않기. 태그한 사람이 무시당했다고 느끼면 그 사람의 친구들도 안 옵니다.</li>
+</ul>
+
+<h2>12. 릴스 → 댓글 자동 DM (2026-09-11 추가)</h2>
+<p class="lead">링크를 프로필이 아니라 DM으로 보냅니다. 지금 계정의 병목(프로필 방문 → 팔로우 0.9%)을 거치지 않는 경로입니다.</p>
+<div class="card pen">
+  <b>릴스</b> "24글자 쓰면 내 글씨가 폰트 됨" → 댓글에 <b>'글씨'</b> → 리틀리(무료)가 자동 답글 + DM(앱 링크 버튼, 팔로우 조건 켬) → 앱에서 <b>응원 문구 골라 카드</b> → 스토리 태그 → 24시간 안에 리포스트.
+</div>
+<ul>
+  <li><b>앱 쪽 준비는 끝났습니다.</b> 첫 화면 예시가 응원 문구 12개를 순환하고(탭하면 바뀜), 완성 화면에 같은 문구 칩이 있어 한 번 눌러 카드로 만듭니다. 문구 목록은 <code>src\app.js</code>의 <code>CHEER_LINES</code>.</li>
+  <li><b>키워드는 '글씨'</b> 두 글자. 릴스 마지막 장과 캡션에 따옴표를 붙여 딱 두 글자로 보여줍니다.</li>
+  <li><b>툴은 리틀리</b>(무료, 팔로우 조건 무료). DM이 막히면 매니챗으로 같은 세팅, 둘을 동시에 켜지 않습니다.</li>
+  <li>릴스 콘티 7장, 리틀리 세팅 순서, DM·자동 답글 문구, 첫 7일 운영, 깔때기 6단 측정은 <code>ht_bangbang_instatoon\04_작업물\20260911_글씨결_응원카드_릴스_자동DM_세팅.md</code>. 실험 카드는 <code>실험_로그.md</code> E-08.</li>
+  <li>볼 숫자는 8번과 같습니다. 하나만 추가: <b>댓글 수 대비 DM 발송 수</b>(리틀리 대시보드). 50% 밑이면 다음 릴스에서 팔로우 조건을 끄고 비교합니다.</li>
+</ul>
+
+<div class="foot">글씨결 플레이북 · 앱 설정과 배포 방법은 README.md 참고</div>
+</div>
+</body>
+</html>

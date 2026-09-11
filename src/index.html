@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#F5F6F8">
+<title>글씨결</title>
+<meta name="description" content="24글자만 쓰면 내 글씨가 폰트가 돼요. 가입 없이 폰에서 3분. 내 글씨로 응원 카드 만들고 스토리에 올리세요.">
+<!-- 링크 미리보기(인스타 DM·카톡). 배포 주소가 다르면 아래 두 URL만 바꾸세요 -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="글씨결 — 24글자만 쓰면 내 글씨가 폰트가 돼요">
+<meta property="og:description" content="가입 없이 폰에서 3분. 내 글씨로 응원 카드 만들고 스토리에 올리세요.">
+<meta property="og:image" content="https://geulssigyeol.vercel.app/og.png">
+<meta property="og:url" content="https://geulssigyeol.vercel.app/">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23FFE95C'/%3E%3Ctext x='32' y='44' font-size='34' font-weight='700' text-anchor='middle' font-family='Apple SD Gothic Neo,Malgun Gothic,sans-serif' fill='%233B3200'%3E글%3C/text%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-title" content="글씨결">
+<!-- Vercel Web Analytics: 프로젝트에서 Analytics를 켜면 방문 수가 잡혀요. 안 켜면 그냥 무시됩니다 -->
+<script>window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };</script>
+<script defer src="/_vercel/insights/script.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand" id="brand">글씨결 <small>내 글씨로 만드는 폰트</small></div>
+    <div class="step" id="topStep"></div>
+  </header>
+
+  <!-- HOME -->
+  <main id="s-home">
+    <section class="hero">
+      <div class="eyebrow">손글씨 → 폰트 파일</div>
+      <h1 class="display" style="margin-top:8px">24글자만 쓰면,<br>내 글씨가 폰트가 돼요</h1>
+      <p class="lead">폰에서 손가락이나 펜으로 한글 자음·모음 24자를 쓰면 11,172자 한글 폰트가 만들어져요. 파일(.ttf)로 저장하고, 내 글씨로 쓴 문장을 카드로 공유하세요.</p>
+      <div class="demo" id="demo" role="button" tabindex="0" aria-label="다른 응원 문구 보기">
+        <span class="tag">응원 한 줄</span>
+        <div class="sample" id="demoText">오늘도 잘하고 있어. 진짜로.</div>
+        <canvas id="demoCanvas" hidden></canvas>
+        <div class="cap"><span>탭하면 다른 문구 · 마우스로 대충 그린 24자 예시 폰트</span><span class="num">3분</span></div>
+      </div>
+      <div class="facts">
+        <div><b class="num">24자</b><span>자음 14 + 모음 10</span></div>
+        <div><b class="num">11,172자</b><span>모든 한글 자동 조합</span></div>
+        <div><b>.ttf</b><span>굿노트·프로크리에이트·캡컷·PC</span></div>
+      </div>
+      <div class="cta">
+        <button class="btn primary wide" id="btnStart">시작하기</button>
+        <button class="btn wide" id="btnResume" hidden>이어서 쓰기 <span class="num" id="resumeCount"></span></button>
+      </div>
+      <p class="fine">쓴 글자는 이 폰에만 저장돼요. 서버로 보내지 않아요.</p>
+    </section>
+  </main>
+
+  <!-- DRAW -->
+  <main id="s-draw" hidden>
+    <div class="draw-head">
+      <div class="stage" id="stageName">한글 기본</div>
+      <div class="count num"><span id="cur">1</span> / <span id="total">24</span></div>
+    </div>
+    <div class="progress"><i id="bar"></i></div>
+    <div class="target">
+      <div class="ch" id="targetCh">ㄱ</div>
+      <div class="info"><b id="targetName">기역</b><span id="targetHint">칸 안에 크게, 평소 쓰던 대로</span></div>
+    </div>
+    <div class="pad-wrap"><canvas id="pad" aria-label="글씨 쓰는 칸"></canvas></div>
+    <div class="tools">
+      <button class="btn" id="btnUndo">한 획 되돌리기</button>
+      <button class="btn" id="btnClear">지우기</button>
+    </div>
+    <div class="nav">
+      <button class="btn prev" id="btnPrev">이전</button>
+      <button class="btn primary next" id="btnNext">다음</button>
+    </div>
+    <div class="chips" id="chips"></div>
+    <div class="live">
+      <div class="lbl">지금까지 쓴 글자로</div>
+      <canvas id="live" hidden></canvas>
+      <div class="hint" id="liveHint">자음 하나, 모음 하나만 써도 여기서 미리 볼 수 있어요.</div>
+    </div>
+    <div class="foot"><button id="btnExitDraw">쓰기 그만하고 결과 보기</button><span id="drawSaved"></span></div>
+  </main>
+
+  <!-- DONE -->
+  <main id="s-done" hidden>
+    <div class="done-head">
+      <div class="eyebrow">완성</div>
+      <h2 class="display" style="margin-top:6px">짜잔, 내 글씨가 폰트가 됐어요</h2>
+      <p id="doneMeta"></p>
+    </div>
+    <div class="preview-card">
+      <div class="pv" id="pv"></div>
+      <canvas id="pvCanvas" hidden></canvas>
+      <div class="pv-foot"><span id="pvName"></span><span class="num" id="pvSize"></span></div>
+    </div>
+    <div class="form">
+      <label class="field">응원 문구 (공유 카드에 들어가요 · 직접 써도 돼요)
+        <textarea id="sample" rows="2"></textarea>
+      </label>
+      <div class="cheer" id="cheerChips" aria-label="응원 문구 고르기"></div>
+      <div class="two">
+        <label class="field">폰트 이름
+          <input id="fname" maxlength="24" placeholder="예: 윤정체">
+        </label>
+        <label class="field">영문 이름 (파일·앱 목록용)
+          <input id="fnameEn" maxlength="24" placeholder="YoonjungCe">
+        </label>
+      </div>
+      <label class="field">펜 굵기
+        <div class="seg" id="penSeg">
+          <button type="button" data-pen="22">가늘게</button>
+          <button type="button" data-pen="30" class="on">보통</button>
+          <button type="button" data-pen="40">굵게</button>
+        </div>
+      </label>
+    </div>
+    <div class="actions">
+      <button class="btn primary wide" id="btnFont">폰트 파일 받기 (.ttf)</button>
+      <button class="btn hl wide" id="btnCard">공유 카드 만들기 (인스타 4:5)</button>
+      <img class="card-img" id="cardImg" alt="공유 카드 미리보기">
+      <div class="card-actions" id="cardActions" hidden>
+        <button class="btn primary" id="btnShare">스토리에 공유하기</button>
+        <button class="btn" id="btnSaveCard">이미지 저장</button>
+      </div>
+      <p class="note" id="installNote">받은 .ttf 파일은 굿노트·프로크리에이트·캡컷에서 바로 불러올 수 있고, 아이폰은 iFont 같은 앱으로, PC는 더블클릭으로 설치해요.</p>
+    </div>
+    <section class="more">
+      <h3>더 쓰면 더 좋아져요</h3>
+      <div class="stage-list" id="stageList"></div>
+    </section>
+    <section class="ig" id="igBlock">
+      <h3 class="display" id="igTitle">내 글씨로 쓴 응원, 스토리에 올려요</h3>
+      <p id="igLead">응원 카드를 스토리에 올리고 <b id="igHandle">@ht_bangbang</b>을 태그해 주세요. 태그된 카드는 24시간 안에 리포스트해 드려요.</p>
+      <ol>
+        <li>응원 문구 고르기 → 공유 카드 저장 → 스토리에 올리기</li>
+        <li><span id="igHandle2">@ht_bangbang</span> 태그 + <span id="igTag">#내글씨폰트</span></li>
+        <li>응원받을 친구도 태그하기 — 친구도 3분이면 자기 글씨 폰트를 받아요</li>
+        <li>팔로우하면 다음 글자 이벤트(쌍자음·이모지·특수문자)를 먼저 받아요</li>
+      </ol>
+      <a class="btn primary wide" id="igLink" href="#" target="_blank" rel="noopener">인스타그램에서 팔로우하기</a>
+    </section>
+    <div class="foot"><button id="btnReset">처음부터 다시 쓰기</button><span>글자는 이 폰에만 저장돼요</span></div>
+  </main>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="handfont.js"></script>
+<script src="app.js"></script>
+
+</body>
+</html>
