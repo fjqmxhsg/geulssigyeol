@@ -30,6 +30,7 @@
     <div class="brand" id="brand">글씨결 <small>내 글씨로 만드는 폰트</small></div>
     <div class="step" id="topStep"></div>
   </header>
+  <p id="storageWarning" class="notice" role="status" hidden></p>
 
   <!-- HOME -->
   <main id="s-home">
@@ -88,15 +89,20 @@
   <!-- DONE -->
   <main id="s-done" hidden>
     <div class="done-head">
-      <div class="eyebrow">완성</div>
-      <h2 class="display" style="margin-top:6px">짜잔, 내 글씨가 폰트가 됐어요</h2>
+      <div class="eyebrow" id="doneLabel">결과</div>
+      <h2 class="display" id="doneTitle" style="margin-top:6px">내 글씨로 만든 폰트</h2>
       <p id="doneMeta"></p>
+    </div>
+    <div class="notice" id="partialNotice" hidden>
+      <p id="partialText"></p>
+      <button class="btn" id="btnContinueKo">남은 한글 이어 쓰기</button>
     </div>
     <div class="preview-card">
       <div class="pv" id="pv"></div>
       <canvas id="pvCanvas" hidden></canvas>
       <div class="pv-foot"><span id="pvName"></span><span class="num" id="pvSize"></span></div>
     </div>
+    <p class="note" id="fallbackNote"></p>
     <div class="form">
       <label class="field">응원 문구 (공유 카드에 들어가요 · 직접 써도 돼요)
         <textarea id="sample" rows="2"></textarea>
@@ -121,6 +127,7 @@
     <div class="actions">
       <button class="btn primary wide" id="btnFont">폰트 파일 받기 (.ttf)</button>
       <button class="btn hl wide" id="btnCard">공유 카드 만들기 (인스타 4:5)</button>
+      <p class="notice" id="cardError" role="status" hidden></p>
       <img class="card-img" id="cardImg" alt="공유 카드 미리보기">
       <div class="card-actions" id="cardActions" hidden>
         <button class="btn primary" id="btnShare">스토리에 공유하기</button>
@@ -134,7 +141,7 @@
     </section>
     <section class="ig" id="igBlock">
       <h3 class="display" id="igTitle">내 글씨로 쓴 응원, 스토리에 올려요</h3>
-      <p id="igLead">응원 카드를 스토리에 올리고 <b id="igHandle">@ht_bangbang</b>을 태그해 주세요. 태그된 카드는 24시간 안에 리포스트해 드려요.</p>
+      <p id="igLead">응원 카드를 스토리에 올리고 <b id="igHandle">@ht_bangbang</b>을 태그해 주세요. 태그해 주신 카드는 확인 후 소개할 수 있어요.</p>
       <ol>
         <li>응원 문구 고르기 → 공유 카드 저장 → 스토리에 올리기</li>
         <li><span id="igHandle2">@ht_bangbang</span> 태그 + <span id="igTag">#내글씨폰트</span></li>

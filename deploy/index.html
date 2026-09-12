@@ -163,6 +163,8 @@
   @media (max-width: 380px) { .form .two { grid-template-columns: 1fr; } }
   .actions { display: grid; gap: 10px; margin-top: 16px; }
   .note { font-size: 12.5px; color: var(--ink-3); line-height: 1.5; }
+  .notice { margin: 12px 0; padding: 12px; border: 1px solid var(--pen-line); border-radius: 12px; background: var(--pen-soft); color: var(--ink); font-size: 14px; line-height: 1.6; overflow-wrap: anywhere; }
+  .notice .btn { margin-top: 8px; }
   .card-img { margin-top: 10px; border-radius: 12px; border: 1px solid var(--line); width: 100%; display: none; }
   .card-img.show { display: block; }
   .card-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -194,6 +196,7 @@
     <div class="brand" id="brand">글씨결 <small>내 글씨로 만드는 폰트</small></div>
     <div class="step" id="topStep"></div>
   </header>
+  <p id="storageWarning" class="notice" role="status" hidden></p>
 
   <!-- HOME -->
   <main id="s-home">
@@ -252,15 +255,20 @@
   <!-- DONE -->
   <main id="s-done" hidden>
     <div class="done-head">
-      <div class="eyebrow">완성</div>
-      <h2 class="display" style="margin-top:6px">짜잔, 내 글씨가 폰트가 됐어요</h2>
+      <div class="eyebrow" id="doneLabel">결과</div>
+      <h2 class="display" id="doneTitle" style="margin-top:6px">내 글씨로 만든 폰트</h2>
       <p id="doneMeta"></p>
+    </div>
+    <div class="notice" id="partialNotice" hidden>
+      <p id="partialText"></p>
+      <button class="btn" id="btnContinueKo">남은 한글 이어 쓰기</button>
     </div>
     <div class="preview-card">
       <div class="pv" id="pv"></div>
       <canvas id="pvCanvas" hidden></canvas>
       <div class="pv-foot"><span id="pvName"></span><span class="num" id="pvSize"></span></div>
     </div>
+    <p class="note" id="fallbackNote"></p>
     <div class="form">
       <label class="field">응원 문구 (공유 카드에 들어가요 · 직접 써도 돼요)
         <textarea id="sample" rows="2"></textarea>
@@ -285,6 +293,7 @@
     <div class="actions">
       <button class="btn primary wide" id="btnFont">폰트 파일 받기 (.ttf)</button>
       <button class="btn hl wide" id="btnCard">공유 카드 만들기 (인스타 4:5)</button>
+      <p class="notice" id="cardError" role="status" hidden></p>
       <img class="card-img" id="cardImg" alt="공유 카드 미리보기">
       <div class="card-actions" id="cardActions" hidden>
         <button class="btn primary" id="btnShare">스토리에 공유하기</button>
@@ -298,7 +307,7 @@
     </section>
     <section class="ig" id="igBlock">
       <h3 class="display" id="igTitle">내 글씨로 쓴 응원, 스토리에 올려요</h3>
-      <p id="igLead">응원 카드를 스토리에 올리고 <b id="igHandle">@ht_bangbang</b>을 태그해 주세요. 태그된 카드는 24시간 안에 리포스트해 드려요.</p>
+      <p id="igLead">응원 카드를 스토리에 올리고 <b id="igHandle">@ht_bangbang</b>을 태그해 주세요. 태그해 주신 카드는 확인 후 소개할 수 있어요.</p>
       <ol>
         <li>응원 문구 고르기 → 공유 카드 저장 → 스토리에 올리기</li>
         <li><span id="igHandle2">@ht_bangbang</span> 태그 + <span id="igTag">#내글씨폰트</span></li>
@@ -873,7 +882,7 @@
     const adj = (0xB1B0AFBA - checksum(whole)) >>> 0;
     whole[headOff + 8] = (adj >>> 24) & 0xFF; whole[headOff + 9] = (adj >>> 16) & 0xFF; whole[headOff + 10] = (adj >>> 8) & 0xFF; whole[headOff + 11] = adj & 0xFF;
     const buffer = whole.slice().buffer;
-    return { buffer, stats: { numGlyphs, mapped: cmapPairs.length, components: compCache.size, bytes: whole.length, psName } };
+    return { buffer, stats: { numGlyphs, mapped: cmapPairs.length, hangul: cmapPairs.filter(([cp]) => cp >= 0xAC00 && cp <= 0xD7A3).length, components: compCache.size, bytes: whole.length, psName } };
   }
 
   // ---------- Canvas fallback renderer ----------
@@ -905,7 +914,6 @@
     cleanStroke, bboxOf, fitStrokes, expandPolylines, planChar, planSyllable, neededJamo, canRender, buildFont, drawText, measureText,
   };
 });
-
 </script>
 <script>
 (function () {
@@ -953,6 +961,7 @@
     '하고 싶은 거 다 해. 지금.',
   ];
   const SAMPLE_WORDS = ['힘내', '괜찮아', '잘하고 있어', '할 수 있어', '고생했어', '수고했어', '안녕', '사랑해', '오늘', '고마워', '우리', '하루', '행복', '봄날', '커피', '여행', '기록', '마음', '노래', '바다', '하늘', '꿈', '집', '친구', '일기', '선물', '잘자', '좋아', '보고싶다', '나의 글씨'];
+  const CARD_BTN = '공유 카드 만들기 (인스타 4:5)';
   const LS_KEY = 'gsg.v1';
 
   const $ = (id) => document.getElementById(id);
@@ -963,25 +972,39 @@
   // ---------- persistence ----------
   function pack(g) { const o = {}; for (const k in g) o[k] = g[k].map(s => s.map(p => [+p.x.toFixed(4), +p.y.toFixed(4)])); return o; }
   function unpack(o) { const g = {}; for (const k in o) g[k] = o[k].map(s => s.map(p => ({ x: p[0], y: p[1] }))); return g; }
+  function storageStatus(ok, message) {
+    $('storageWarning').hidden = ok;
+    $('storageWarning').textContent = ok ? '' : message;
+    $('drawSaved').textContent = ok ? '자동 저장됨' : '자동 저장 실패';
+  }
   function save() {
-    try { localStorage.setItem(LS_KEY, JSON.stringify({ glyphs: pack(state.glyphs), pen: state.pen, name: state.name, nameEn: state.nameEn, sample: state.sample, stage: state.stage, idx: state.idx })); } catch (e) {}
+    try {
+      localStorage.setItem(LS_KEY, JSON.stringify({ glyphs: pack(state.glyphs), pen: state.pen, name: state.name, nameEn: state.nameEn, sample: state.sample, stage: state.stage, idx: state.idx }));
+      storageStatus(true); return true;
+    } catch (e) {
+      storageStatus(false, '이 브라우저에 자동 저장하지 못했어요. 지금 쓴 글자는 화면에 남아 있지만, 창을 닫거나 새로고침하면 사라질 수 있어요. 닫기 전에 결과 화면에서 폰트 파일을 받아 주세요.');
+      return false;
+    }
   }
   function load() {
-    try { const raw = localStorage.getItem(LS_KEY); if (!raw) return; const d = JSON.parse(raw); state.glyphs = unpack(d.glyphs || {}); state.pen = d.pen || 30; state.name = d.name || state.name; state.nameEn = d.nameEn || state.nameEn; state.sample = d.sample || state.sample; state.stage = d.stage || 0; state.idx = d.idx || 0; } catch (e) {}
+    try { const raw = localStorage.getItem(LS_KEY); if (!raw) return; const d = JSON.parse(raw); state.glyphs = unpack(d.glyphs || {}); state.pen = d.pen || 30; state.name = d.name || state.name; state.nameEn = d.nameEn || state.nameEn; state.sample = d.sample || state.sample; state.stage = d.stage || 0; state.idx = d.idx || 0; } catch (e) { storageStatus(false, '이전에 저장한 글자를 불러오지 못했어요. 이전 작업이 있다면 사용하던 브라우저에서 다시 확인해 주세요.'); }
   }
   function drawnCount(stage) { let n = 0; for (const ch of stage.chars) if (state.glyphs[ch] && state.glyphs[ch].length) n++; return n; }
   function totalDrawn() { let n = 0; for (const k in state.glyphs) if (state.glyphs[k].length) n++; return n; }
   function koReady() { return HF.BASIC_CONS.split('').some(c => state.glyphs[c] && state.glyphs[c].length) && HF.BASIC_VOW.split('').some(c => state.glyphs[c] && state.glyphs[c].length); }
 
+  function missingKo() { return [...STAGES[0].chars].filter(c => !(state.glyphs[c] && state.glyphs[c].length)); }
+  function hangulCount() { return (builtStats ? builtStats.hangul : 0).toLocaleString('ko-KR'); }
+
   // ---------- screens ----------
-  function show(id) { for (const s of ['s-home', 's-draw', 's-done']) $(s).hidden = s !== id; window.scrollTo(0, 0); $('topStep').textContent = id === 's-draw' ? '쓰는 중' : id === 's-done' ? '완성' : ''; }
+  function show(id) { for (const s of ['s-home', 's-draw', 's-done']) $(s).hidden = s !== id; window.scrollTo(0, 0); $('topStep').textContent = id === 's-draw' ? '쓰는 중' : id === 's-done' ? '결과' : ''; }
   function toast(msg) { const t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('show'), 2200); }
 
   // ---------- HOME ----------
   function renderHome() {
     const n = totalDrawn();
     $('btnResume').hidden = n === 0;
-    $('resumeCount').textContent = n ? `(${n}자 저장됨)` : '';
+    $('resumeCount').textContent = n ? `(${n}자)` : '';
     $('btnStart').textContent = n ? '처음부터 새로 쓰기' : '시작하기';
   }
   let demoIdx = Math.floor(Math.random() * CHEER_LINES.length), demoGlyphs = null, demoUseCanvas = false;
@@ -1077,7 +1100,7 @@
     if (e) cur.push(ptOf(e));
     const ch = curChar(); const clean = HF.cleanStroke(cur);
     if (clean.length) { (state.glyphs[ch] = state.glyphs[ch] || []).push(clean); }
-    cur = []; redraw(); save(); renderChips(); renderLive(); $('drawSaved').textContent = '자동 저장됨';
+    cur = []; redraw(); save(); renderChips(); renderLive();
   }
   pad.addEventListener('pointerup', endStroke);
   pad.addEventListener('pointercancel', endStroke);
@@ -1139,9 +1162,16 @@
     const pv = $('pv'), pc = $('pvCanvas');
     if (faceOk) { pv.hidden = false; pc.hidden = true; pv.style.fontFamily = `"${faceName}", "Gaegu", cursive`; pv.textContent = state.sample || ' '; }
     else { pv.hidden = true; pc.hidden = false; pc.style.height = '120px'; drawOnCanvas(pc, state.glyphs, state.sample, state.pen); }
-    const ko = koReady(); const en = 'abcdefghijklmnopqrstuvwxyz'.split('').filter(c => state.glyphs[c]).length; const up = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').filter(c => state.glyphs[c]).length; const dg = '0123456789'.split('').filter(c => state.glyphs[c]).length;
-    const parts = []; if (ko) parts.push('한글 11,172자'); if (en) parts.push(`영문 소문자 ${en}자`); if (up) parts.push(`대문자 ${up}자`); if (dg) parts.push(`숫자 ${dg}자`);
+    const en = 'abcdefghijklmnopqrstuvwxyz'.split('').filter(c => state.glyphs[c]).length; const up = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').filter(c => state.glyphs[c]).length; const dg = '0123456789'.split('').filter(c => state.glyphs[c]).length;
+    const parts = [`한글 ${hangulCount()}자`]; if (en) parts.push(`영문 소문자 ${en}자`); if (up) parts.push(`대문자 ${up}자`); if (dg) parts.push(`숫자 ${dg}자`);
     $('doneMeta').textContent = `${parts.join(' · ')} — 직접 쓴 ${totalDrawn()}자로 만들었어요.`;
+    const missing = missingKo();
+    $('doneLabel').textContent = missing.length ? '일부 완성 · 미리보기' : '완성';
+    $('topStep').textContent = missing.length ? '일부 완성' : '완성';
+    $('doneTitle').textContent = missing.length ? '지금까지 쓴 글씨로 만든 폰트예요' : '짜잔, 내 글씨가 폰트가 됐어요';
+    $('partialNotice').hidden = missing.length === 0;
+    $('partialText').textContent = missing.length ? `기본 24자 중 ${24 - missing.length}자를 썼어요. 남은 ${missing.length}자(${missing.join(' ')})를 쓰면 한글 11,172자가 모두 들어 있는 폰트를 받을 수 있어요.` : '';
+    $('fallbackNote').textContent = faceOk ? '아직 조합되지 않은 한글과 직접 쓰지 않은 영문·문장부호는 미리보기와 카드에서 기본 글꼴로 보이며, 다운로드한 폰트에는 포함되지 않아요.' : '이 브라우저에서는 직접 쓴 획으로 미리 보여드려요. 아직 만들지 않은 글자는 빈칸으로 보이고, 다운로드한 폰트에도 포함되지 않아요.';
     $('pvName').textContent = state.name + (state.nameEn ? ` · ${state.nameEn}` : '');
     $('pvSize').textContent = builtStats ? `${(builtStats.bytes / 1024).toFixed(0)} KB · ${builtStats.numGlyphs.toLocaleString()} glyphs` : '';
   }
@@ -1155,6 +1185,7 @@
       row.appendChild(b); box.appendChild(row);
     });
   }
+  $('btnContinueKo').addEventListener('click', () => { state.stage = 0; state.idx = Math.max(0, STAGES[0].chars.indexOf(missingKo()[0])); show('s-draw'); renderDraw(); });
   function renderCheerChips() {
     const box = $('cheerChips'); box.innerHTML = '';
     CHEER_LINES.forEach(line => {
@@ -1217,6 +1248,20 @@
     }
     return out;
   }
+  function cardLayout(text, metrics, maxW, top, bottom) {
+    for (let size = 150; size >= 60; size -= 6) {
+      const lines = wrapLines(s => metrics(s, size).width, text, maxW);
+      let ascent = size * 0.95, descent = size * 0.3;
+      for (const line of lines) {
+        const m = metrics(line, size);
+        ascent = Math.max(ascent, m.ascent); descent = Math.max(descent, m.descent);
+      }
+      const lh = Math.max(size * 1.35, ascent + descent + size * 0.1);
+      const height = ascent + descent + (lines.length - 1) * lh;
+      if (height <= bottom - top) return { lines, size, lh, y: top + (bottom - top - height) / 2 + ascent };
+    }
+    throw new RangeError('문구가 카드 한 장에 들어가지 않아요. 문장을 짧게 하거나 줄바꿈을 줄인 뒤 다시 만들어 주세요.');
+  }
   async function makeCard() {
     if (!built) await buildAndApply();
     const W = 1080, H = 1350; const c = document.createElement('canvas'); c.width = W; c.height = H; const ctx = c.getContext('2d');
@@ -1226,46 +1271,63 @@
     ctx.strokeStyle = P.grid; ctx.lineWidth = 2;
     for (let x = 60; x < W; x += 60) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
     for (let y = 60; y < H; y += 60) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+    const UI = '"IBM Plex Sans KR", sans-serif';
+    // 손글씨 폰트로 재기·그리기 (FontFace가 안 되는 환경은 획으로 직접 그려요)
+    const handW = (s, size) => { if (faceOk) { ctx.font = `${size}px "${faceName}"`; return ctx.measureText(s).width; } return HF.measureText(state.glyphs, s, size, state.pen); };
+    const hand = (s, x, y, size, color) => { if (faceOk) { ctx.font = `${size}px "${faceName}"`; ctx.fillStyle = color; ctx.fillText(s, x, y); } else HF.drawText(ctx, state.glyphs, s, x, y, size, state.pen, color); };
+    const handMetrics = (s, size) => {
+      const width = handW(s, size);
+      const m = faceOk ? ctx.measureText(s) : null;
+      return { width, ascent: m ? m.actualBoundingBoxAscent : size, descent: m ? m.actualBoundingBoxDescent : size * 0.35 };
+    };
+    const uiLine = (text, x, y, size, weight, color) => {
+      ctx.fillStyle = color;
+      do { ctx.font = `${weight} ${size}px ${UI}`; if (ctx.measureText(text).width <= W - 160 || size <= 16) break; size--; } while (true);
+      ctx.fillText(text, x, y);
+    };
     // top label
-    ctx.fillStyle = P.hl; ctx.fillRect(80, 92, 300, 56); ctx.fillStyle = P.hlInk; ctx.font = '700 28px "IBM Plex Sans KR", sans-serif'; ctx.textBaseline = 'middle'; ctx.fillText('내 손글씨로 만든 폰트', 100, 120);
-    ctx.fillStyle = P.ink2; ctx.font = '500 26px "IBM Plex Sans KR", sans-serif'; ctx.textAlign = 'right'; ctx.fillText(CONFIG.brand, W - 80, 120); ctx.textAlign = 'left';
+    const label = '내 손글씨로 만든 폰트';
+    ctx.font = `700 28px ${UI}`; const lw = 300;
+    ctx.fillStyle = P.hl; ctx.fillRect(80, 92, lw, 56); ctx.fillStyle = P.hlInk; ctx.textBaseline = 'middle'; ctx.fillText(label, 100, 120);
+    ctx.fillStyle = P.ink2; ctx.font = `500 26px ${UI}`;
+    ctx.textAlign = 'right'; ctx.fillText(CONFIG.brand, W - 80, 120); ctx.textAlign = 'left';
+    ctx.textBaseline = 'alphabetic';
     // main text
     const text = state.sample || CONFIG.defaultSample;
-    const maxW = W - 160;
-    let size = 150, lines;
-    const measure = faceOk ? (s) => { ctx.font = `${size}px "${faceName}"`; return ctx.measureText(s).width; } : (s) => HF.measureText(state.glyphs, s, size, state.pen);
-    do { lines = wrapLines(measure, text, maxW); size -= 6; } while (lines.length * size * 1.35 > H - 520 && size > 60);
-    size += 6; const lh = size * 1.35; let y = (H - lines.length * lh) / 2 + lh * 0.7 - 20;
-    ctx.fillStyle = P.ink; ctx.textBaseline = 'alphabetic';
-    for (const ln of lines) {
-      if (faceOk) { ctx.font = `${size}px "${faceName}"`; ctx.fillText(ln, 80, y); }
-      else HF.drawText(ctx, state.glyphs, ln, 80, y, size, state.pen, P.ink);
-      y += lh;
-    }
+    // 머리말과 하단 출처 영역을 제외하고, 실제 글자 높이를 재서 배치해요.
+    const layout = cardLayout(text, handMetrics, W - 180, 220, 1100);
+    const { size, lines, lh } = layout; let y = layout.y;
+    ctx.textBaseline = 'alphabetic';
+    for (const ln of lines) { hand(ln, 80, y, size, P.ink); y += lh; }
     // bottom
-    ctx.fillStyle = P.ink; ctx.font = '600 34px "IBM Plex Sans KR", sans-serif'; ctx.textBaseline = 'alphabetic';
-    ctx.fillText(state.name, 80, H - 170);
-    ctx.fillStyle = P.ink2; ctx.font = '400 26px "IBM Plex Sans KR", sans-serif';
-    const d = new Date(); ctx.fillText(`${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')} · 직접 쓴 ${totalDrawn()}자로 한글 11,172자`, 80, H - 126);
-    ctx.fillStyle = P.pen; ctx.font = '600 30px "IBM Plex Sans KR", sans-serif'; ctx.textAlign = 'right';
-    ctx.fillText(`${CONFIG.handle}  ${CONFIG.hashtag}`, W - 80, H - 126); ctx.textAlign = 'left';
+    const d = new Date(); const date = `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
+    uiLine(state.name, 80, H - 170, 34, 600, P.ink);
+    uiLine(`${date} · 직접 쓴 ${totalDrawn()}자로 한글 ${hangulCount()}자`, 80, H - 126, 26, 400, P.ink2);
+    ctx.fillStyle = P.pen; ctx.font = `600 30px ${UI}`; ctx.textAlign = 'right';
+    ctx.fillText(`${CONFIG.handle}  ${CONFIG.hashtag}`, W - 80, H - 80); ctx.textAlign = 'left';
     return c;
   }
-  // 폰(iOS Safari·안드로이드 크롬)에서는 공유 시트로 인스타 스토리에 바로 넘겨요. PC는 저장만.
+  // 파일 공유를 지원하면 기기의 공유 시트를 열어요. 대상 앱은 기기 환경에 따라 달라요.
   let cardBlob = null;
   const canShareFiles = (() => { try { return !!(navigator.canShare && navigator.canShare({ files: [new File([new Uint8Array(1)], 'x.png', { type: 'image/png' })] })); } catch (e) { return false; } })();
   function cardFileName() { return (state.nameEn.replace(/\s+/g, '') || 'MyHandwriting') + '-card.png'; }
-  function resetCard() { cardBlob = null; $('cardImg').classList.remove('show'); $('cardActions').hidden = true; }
+  function resetCard() { cardBlob = null; $('cardImg').classList.remove('show'); $('cardActions').hidden = true; $('cardError').hidden = true; $('cardError').textContent = ''; }
   $('btnCard').addEventListener('click', async () => {
+    resetCard();
     const b = $('btnCard'); b.disabled = true; b.textContent = '카드 만드는 중…';
     try {
       const c = await makeCard();
-      const img = $('cardImg'); img.src = c.toDataURL('image/png'); img.classList.add('show');
       cardBlob = await new Promise(res => c.toBlob(res, 'image/png'));
+      if (!cardBlob) throw new Error('PNG encoding failed');
+      const img = $('cardImg'); img.src = c.toDataURL('image/png'); img.classList.add('show');
       $('btnShare').hidden = !canShareFiles;
       $('cardActions').hidden = false;
       toast(canShareFiles ? '카드 완성! 공유하거나 저장하세요' : '카드 완성! 이미지를 저장하세요');
-    } finally { b.disabled = false; b.textContent = '카드 다시 만들기'; }
+    } catch (e) {
+      resetCard();
+      $('cardError').textContent = e instanceof RangeError ? e.message : '카드를 만들지 못했어요. 잠시 후 다시 눌러 주세요.';
+      $('cardError').hidden = false;
+    } finally { b.disabled = false; b.textContent = cardBlob ? '카드 다시 만들기' : CARD_BTN; }
   });
   $('btnShare').addEventListener('click', async () => {
     if (!cardBlob) return;

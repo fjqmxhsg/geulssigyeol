@@ -139,6 +139,8 @@
   @media (max-width: 380px) { .form .two { grid-template-columns: 1fr; } }
   .actions { display: grid; gap: 10px; margin-top: 16px; }
   .note { font-size: 12.5px; color: var(--ink-3); line-height: 1.5; }
+  .notice { margin: 12px 0; padding: 12px; border: 1px solid var(--pen-line); border-radius: 12px; background: var(--pen-soft); color: var(--ink); font-size: 14px; line-height: 1.6; overflow-wrap: anywhere; }
+  .notice .btn { margin-top: 8px; }
   .card-img { margin-top: 10px; border-radius: 12px; border: 1px solid var(--line); width: 100%; display: none; }
   .card-img.show { display: block; }
   .card-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }

@@ -558,7 +558,7 @@
     const adj = (0xB1B0AFBA - checksum(whole)) >>> 0;
     whole[headOff + 8] = (adj >>> 24) & 0xFF; whole[headOff + 9] = (adj >>> 16) & 0xFF; whole[headOff + 10] = (adj >>> 8) & 0xFF; whole[headOff + 11] = adj & 0xFF;
     const buffer = whole.slice().buffer;
-    return { buffer, stats: { numGlyphs, mapped: cmapPairs.length, components: compCache.size, bytes: whole.length, psName } };
+    return { buffer, stats: { numGlyphs, mapped: cmapPairs.length, hangul: cmapPairs.filter(([cp]) => cp >= 0xAC00 && cp <= 0xD7A3).length, components: compCache.size, bytes: whole.length, psName } };
   }
 
   // ---------- Canvas fallback renderer ----------
@@ -590,4 +590,3 @@
     cleanStroke, bboxOf, fitStrokes, expandPolylines, planChar, planSyllable, neededJamo, canRender, buildFont, drawText, measureText,
   };
 });
-
